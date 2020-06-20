@@ -30,18 +30,7 @@ class Window : Form {
 
     // Given an x-coordinates returns corresponding year
     public int year(int x) {
-        if (108 < x && 108 + 96 >= x)
-            return 2017;
-        else if (108 + 96 < x && 108 + 96*2 >= x)
-            return 2018;
-        else if (108 + 96*2 < x && 108 + 96*3 >= x)
-            return 2019;
-        else if (108 + 96*3 < x && 108 + 96*4 >= x)
-            return 2020;
-        else if (108 + 96*4 < x && 108 + 96*5 >= x)
-            return 2021;
-        else
-            return -1;
+        return 2017 + (x - 108) / 96;
     }
 
     // Given a y-coordinate returns corresponding price
