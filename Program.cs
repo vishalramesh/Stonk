@@ -7,14 +7,16 @@ using System.Drawing;
 using System.IO;
 
 class Window : Form {
+
     Graph graph;
-    bool can_click = false; // Can click submit button
-    bool finished = false; // Draw answers when true
-    bool down = false; // Mouse down when true
+    bool can_click_submit = false;
+    bool draw_answers = false;
+    bool mouse_down = false;
     // bool hover = false;
     bool move = false;
     bool next = false;
     Dictionary<int, Point> vertexPositions = new Dictionary<int, Point>();
+
     public Window(Graph graph) {
         Text = "Investment Game";
         this.graph = graph;
@@ -29,7 +31,7 @@ class Window : Form {
     }
 
     // Given an x-coordinates returns corresponding year
-    public int year(int x) {
+    public int x_to_year(int x) {
         return 2017 + (x - 108) / 96;
     }
 
@@ -70,12 +72,12 @@ class Window : Form {
         g.DrawString(graph.ticker, new Font("Serif", 9), blackBrush, 400, 40);
 
         // Button
-        if (can_click) {
+        if (can_click_submit) {
             g.FillRectangle(new SolidBrush(Color.IndianRed), 220, 340, 180, 40);
         } else {
             g.FillRectangle(new SolidBrush(Color.LightGray), 220, 345, 170, 40);
         }
-        if (finished)
+        if (draw_answers)
             g.DrawString("Try another".ToUpper(), new Font("Serif", 10), new SolidBrush(Color.White), 255, 355);
         else
             g.DrawString("Show me how I did".ToUpper(), new Font("Serif", 10), new SolidBrush(Color.White), 240, 355);   
@@ -102,7 +104,7 @@ class Window : Form {
 
         // Drawing winning as well
         Pen greenPen = new Pen(Color.Green, 2); 
-        if (finished) {
+        if (draw_answers) {
             for (int i = 2016; i <= 2020; ++i) {
                 Point pt1 = new Point();
                 pt1.X = 108 + (i - 2016)*96;
@@ -137,7 +139,7 @@ class Window : Form {
     }
 
     protected override void OnMouseMove(MouseEventArgs e) {
-        if (down & !finished) {
+        if (mouse_down & !draw_answers) {
             foreach (int yyear in vertexPositions.Keys) {
                 if (yyear == 2016)
                     continue;
@@ -154,61 +156,61 @@ class Window : Form {
     }
 
     protected override void OnMouseDown(MouseEventArgs e) {
-        down = true;
+        mouse_down = true;
         if (e.Y <= 300 && e.Y >= 90) {
-            if (108 < e.X && 108 + 96 >= e.X && vertexPositions.ContainsKey(year(e.X) - 1) 
-            && vertexPositions.ContainsKey(year(e.X)) == false) {
+            if (108 < e.X && 108 + 96 >= e.X && vertexPositions.ContainsKey(x_to_year(e.X) - 1) 
+            && vertexPositions.ContainsKey(x_to_year(e.X)) == false) {
                 Point p = new Point();
                 p.X = 108 + 96;
                 p.Y = e.Y;
-                vertexPositions.Add(year(e.X), p);
-                graph.addPoint(year(e.X), price(e.Y));
+                vertexPositions.Add(x_to_year(e.X), p);
+                graph.addPoint(x_to_year(e.X), price(e.Y));
                 Invalidate();
             }
-            else if (108 + 96*1 < e.X && 108 + 96*2 >= e.X && vertexPositions.ContainsKey(year(e.X) - 1)
-            && vertexPositions.ContainsKey(year(e.X)) == false) {
+            else if (108 + 96*1 < e.X && 108 + 96*2 >= e.X && vertexPositions.ContainsKey(x_to_year(e.X) - 1)
+            && vertexPositions.ContainsKey(x_to_year(e.X)) == false) {
                 Point p = new Point();
                 p.X = 108 + 96*2;
                 p.Y = e.Y;
-                vertexPositions.Add(year(e.X), p);
-                graph.addPoint(year(e.X), price(e.Y));
+                vertexPositions.Add(x_to_year(e.X), p);
+                graph.addPoint(x_to_year(e.X), price(e.Y));
                 Invalidate();
             }
-            else if (108 + 96*2 < e.X && 108 + 96*3 >= e.X && vertexPositions.ContainsKey(year(e.X) - 1)
-            && vertexPositions.ContainsKey(year(e.X)) == false) {
+            else if (108 + 96*2 < e.X && 108 + 96*3 >= e.X && vertexPositions.ContainsKey(x_to_year(e.X) - 1)
+            && vertexPositions.ContainsKey(x_to_year(e.X)) == false) {
                 Point p = new Point();
                 p.X = 108 + 96*3;
                 p.Y = e.Y;
-                vertexPositions.Add(year(e.X), p);
-                graph.addPoint(year(e.X), price(e.Y));
+                vertexPositions.Add(x_to_year(e.X), p);
+                graph.addPoint(x_to_year(e.X), price(e.Y));
                 Invalidate();
             }
-            else if (108 + 96*3 < e.X && 108 + 96*4 >= e.X && vertexPositions.ContainsKey(year(e.X) - 1)
-            && vertexPositions.ContainsKey(year(e.X)) == false) {
+            else if (108 + 96*3 < e.X && 108 + 96*4 >= e.X && vertexPositions.ContainsKey(x_to_year(e.X) - 1)
+            && vertexPositions.ContainsKey(x_to_year(e.X)) == false) {
                 Point p = new Point();
                 p.X = 108 + 96*4;
                 p.Y = e.Y;
-                vertexPositions.Add(year(e.X), p);
-                graph.addPoint(year(e.X), price(e.Y));
+                vertexPositions.Add(x_to_year(e.X), p);
+                graph.addPoint(x_to_year(e.X), price(e.Y));
                 Invalidate();
             }
-            else if (108 + 96*4 < e.X && 108 + 96*5 >= e.X && vertexPositions.ContainsKey(year(e.X) - 1)
-            && vertexPositions.ContainsKey(year(e.X)) == false) {
+            else if (108 + 96*4 < e.X && 108 + 96*5 >= e.X && vertexPositions.ContainsKey(x_to_year(e.X) - 1)
+            && vertexPositions.ContainsKey(x_to_year(e.X)) == false) {
                 Point p = new Point();
                 p.X = 108 + 96*5 - 48;
                 p.Y = e.Y;
-                vertexPositions.Add(year(e.X), p);
-                graph.addPoint(year(e.X), price(e.Y));
-                can_click = true; // Can click is now true
+                vertexPositions.Add(x_to_year(e.X), p);
+                graph.addPoint(x_to_year(e.X), price(e.Y));
+                can_click_submit = true; // Can click is now true
                 Invalidate();
             }
         }
-        if (can_click && !finished)
+        if (can_click_submit && !draw_answers)
             if (e.X >= 220 && e.X <= 220 + 170 && e.Y <= 385 && e.Y >= 345 ) {
-                finished = true;
+                draw_answers = true;
                 Invalidate();
             }
-        if (can_click && finished) 
+        if (can_click_submit && draw_answers) 
             if (next) {
                 GetNextReady();
             }
@@ -219,9 +221,9 @@ class Window : Form {
     }
 
     public void GetNextReady() {
-        can_click = false; // Can click submit button
-        finished = false; // Draw answers when true
-        down = false; // Mouse down when true
+        can_click_submit = false; // Can click submit button
+        draw_answers = false; // Draw answers when true
+        mouse_down = false; // Mouse down when true
         move = false;
         next = false;
         vertexPositions = new Dictionary<int, Point>();
@@ -229,7 +231,7 @@ class Window : Form {
     }
 
     protected override void OnMouseUp(MouseEventArgs e) {
-        down = false;
+        mouse_down = false;
         if (move) {
             move = false;
             Invalidate();
