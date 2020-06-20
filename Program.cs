@@ -9,12 +9,13 @@ using System.IO;
 class Window : Form {
 
     Graph graph;
+
     bool can_click_submit = false;
     bool draw_answers = false;
     bool mouse_down = false;
-    // bool hover = false;
-    bool move = false;
-    bool next = false;
+    bool mouse_move = false;
+    bool display_next = false;
+
     Dictionary<int, Point> vertexPositions = new Dictionary<int, Point>();
 
     public Window(Graph graph) {
@@ -30,14 +31,12 @@ class Window : Form {
         vertexPositions.Add(2015, point1);
     }
 
-    // Given an x-coordinates returns corresponding year
     public int x_to_year(int x) {
         return 2017 + (x - 108) / 96;
     }
 
-    // Given a y-coordinate returns corresponding price
-    public double price(int y) {
-        return ((300 - y)/210) * graph.max_price;
+    public double y_to_price(int y) {
+        return graph.max_price * ((300 - y) / 210);
     }
 
     protected override void OnPaint(PaintEventArgs args) {
@@ -117,38 +116,18 @@ class Window : Form {
                 g.DrawLine(greenPen, pt1, pt2);
             }
         }
-
-        // Hover
-        // if (hover) {
-        //     Point p = new Point();
-        //     p.X = Cursor.Position.X - 10;
-        //     p.Y = Cursor.Position.Y - 10;
-        //     g.DrawString(graph.actual_vertices[year(Cursor.Position.X - 10)].ToString(), new Font("Serif", 9), blackBrush, p);
-        // }
-
-        // foreach (int y in vertexPositions.Keys) {
-        //     Point p = vertexPositions[y];
-        //     if (Math.Abs(Cursor.Position.X  - p.X) <= 15 && Math.Abs(Cursor.Position.Y - p.Y) <= 15) {
-        //         // Point po = new Point();
-        //         // p.X = Cursor.Position.X - 10;
-        //         // p.Y = Cursor.Position.Y - 10;
-        //         g.DrawString(graph.actual_vertices[year(Cursor.Position.X - 15)].ToString(), new Font("Serif", 9), blackBrush, p);
-        //     }
-                
-        // }
     }
 
     protected override void OnMouseMove(MouseEventArgs e) {
         if (mouse_down & !draw_answers) {
-            foreach (int yyear in vertexPositions.Keys) {
-                if (yyear == 2016)
+            foreach (int year in vertexPositions.Keys) {
+                if (year == 2016)
                     continue;
-                if (Math.Abs(e.X - vertexPositions[yyear].X) <= 15 && Math.Abs(e.Y - vertexPositions[yyear].Y) <= 15) {
+                if (Math.Abs(e.X - vertexPositions[year].X) <= 15 && Math.Abs(e.Y - vertexPositions[year].Y) <= 15) {
                     if (e.Y >= 80 && e.Y <= 300) {
-                        vertexPositions[yyear] = new Point(vertexPositions[yyear].X, e.Y);
-                        // Invalidate();
-                        move = true;
-                        return;
+                        vertexPositions[year] = new Point(vertexPositions[year].X, e.Y);
+                        mouse_move = true;
+                        break;
                     }
                 }
             }
@@ -157,98 +136,56 @@ class Window : Form {
 
     protected override void OnMouseDown(MouseEventArgs e) {
         mouse_down = true;
-        if (e.Y <= 300 && e.Y >= 90) {
-            if (108 < e.X && 108 + 96 >= e.X && vertexPositions.ContainsKey(x_to_year(e.X) - 1) 
+
+        if (e.Y <= 300 && e.Y >= 90 && vertexPositions.ContainsKey(x_to_year(e.X) - 1) 
             && vertexPositions.ContainsKey(x_to_year(e.X)) == false) {
-                Point p = new Point();
-                p.X = 108 + 96;
-                p.Y = e.Y;
-                vertexPositions.Add(x_to_year(e.X), p);
-                graph.addPoint(x_to_year(e.X), price(e.Y));
-                Invalidate();
-            }
-            else if (108 + 96*1 < e.X && 108 + 96*2 >= e.X && vertexPositions.ContainsKey(x_to_year(e.X) - 1)
-            && vertexPositions.ContainsKey(x_to_year(e.X)) == false) {
-                Point p = new Point();
-                p.X = 108 + 96*2;
-                p.Y = e.Y;
-                vertexPositions.Add(x_to_year(e.X), p);
-                graph.addPoint(x_to_year(e.X), price(e.Y));
-                Invalidate();
-            }
-            else if (108 + 96*2 < e.X && 108 + 96*3 >= e.X && vertexPositions.ContainsKey(x_to_year(e.X) - 1)
-            && vertexPositions.ContainsKey(x_to_year(e.X)) == false) {
-                Point p = new Point();
-                p.X = 108 + 96*3;
-                p.Y = e.Y;
-                vertexPositions.Add(x_to_year(e.X), p);
-                graph.addPoint(x_to_year(e.X), price(e.Y));
-                Invalidate();
-            }
-            else if (108 + 96*3 < e.X && 108 + 96*4 >= e.X && vertexPositions.ContainsKey(x_to_year(e.X) - 1)
-            && vertexPositions.ContainsKey(x_to_year(e.X)) == false) {
-                Point p = new Point();
-                p.X = 108 + 96*4;
-                p.Y = e.Y;
-                vertexPositions.Add(x_to_year(e.X), p);
-                graph.addPoint(x_to_year(e.X), price(e.Y));
-                Invalidate();
-            }
-            else if (108 + 96*4 < e.X && 108 + 96*5 >= e.X && vertexPositions.ContainsKey(x_to_year(e.X) - 1)
-            && vertexPositions.ContainsKey(x_to_year(e.X)) == false) {
-                Point p = new Point();
-                p.X = 108 + 96*5 - 48;
-                p.Y = e.Y;
-                vertexPositions.Add(x_to_year(e.X), p);
-                graph.addPoint(x_to_year(e.X), price(e.Y));
-                can_click_submit = true; // Can click is now true
-                Invalidate();
+            
+            for (int i = 0; i <= 4; ++i) {
+                if (108 + 96 * i < e.X && 108 + 96 * (i + 1) >= e.X) {
+                    Point p = new Point();
+                    p.X = 108 + 96 * (i + 1);
+                    p.X = (i == 4) ? p.X - 48: p.X;
+                    can_click_submit = (i == 4);
+                    p.Y = e.Y;
+                    vertexPositions.Add(x_to_year(e.X), p);
+                    graph.addPoint(x_to_year(e.X), y_to_price(e.Y));
+                    Invalidate();
+                }
             }
         }
+
         if (can_click_submit && !draw_answers)
             if (e.X >= 220 && e.X <= 220 + 170 && e.Y <= 385 && e.Y >= 345 ) {
                 draw_answers = true;
                 Invalidate();
             }
         if (can_click_submit && draw_answers) 
-            if (next) {
+            if (display_next) {
                 GetNextReady();
             }
             if (e.X >= 220 && e.X <= 220 + 170 && e.Y <= 385 && e.Y >= 345 ) {
                 // Next
-                next = true;
+                display_next = true;
             }
     }
 
     public void GetNextReady() {
-        can_click_submit = false; // Can click submit button
-        draw_answers = false; // Draw answers when true
-        mouse_down = false; // Mouse down when true
-        move = false;
-        next = false;
+        can_click_submit = false; 
+        draw_answers = false;
+        mouse_down = false;
+        mouse_move = false;
+        display_next = false;
         vertexPositions = new Dictionary<int, Point>();
         Invalidate();
     }
 
     protected override void OnMouseUp(MouseEventArgs e) {
         mouse_down = false;
-        if (move) {
-            move = false;
+        if (mouse_move) {
+            mouse_move = false;
             Invalidate();
         }
     }
-
-    // Hover over vertex reveals price
-    // protected override void OnMouseHover(EventArgs e) {
-    //     foreach (int ye in vertexPositions.Keys) {
-    //         Point p = vertexPositions[ye];
-    //         if (Math.Abs(Cursor.Position.X  - p.X) <= 15 && Math.Abs(Cursor.Position.Y - p.Y) <= 15)
-    //             hover = true;
-    //         else 
-    //             hover = false;
-    //     }
-    //     Invalidate();
-    // }
 
     [STAThread]
     static void Main() {
