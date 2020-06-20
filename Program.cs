@@ -10,25 +10,31 @@ class Window : Form {
 
     Graph graph;
 
+    Button button = new Button();
+
     bool can_click_submit = false;
     bool draw_answers = false;
     bool mouse_down = false;
     bool mouse_move = false;
     bool display_next = false;
 
+    const int EndYear = 2020;
+    const int StartYear = 2016;
+
     Dictionary<int, Point> vertexPositions = new Dictionary<int, Point>();
 
     public Window(Graph graph) {
         Text = "Investment Game";
         this.graph = graph;
-        Point point2 = new Point();
-        point2.X = 60 + 48;
-        point2.Y = 300 - (int)((graph.drawn[2016] / graph.max_price) * 210);
-        vertexPositions.Add(2016, point2);
-        Point point1 = new Point();
-        point1.X = 60;
-        point1.Y = 300;
-        vertexPositions.Add(2015, point1);
+        DrawStartingLine();
+        button.Location = new Point(220, 345);
+        button.Text = "SHOW ME HOW I DID";
+        button.Width = 170;
+        button.Height = 40;
+        button.BackColor = Color.LightGray;
+        button.Font = new Font("Arial", 10);
+        this.Controls.Add(button);
+        button.Click += OnButtonClick;
     }
 
     public int x_to_year(int x) {
@@ -42,86 +48,46 @@ class Window : Form {
     protected override void OnPaint(PaintEventArgs args) {
         Graphics g = args.Graphics;
 
+        DrawAxes(g);
 
-        Pen pen = new Pen(Color.FromArgb(255, 0, 0, 0), 2);
-        Pen thinPen = new Pen(Color.FromArgb(255, 0, 0, 0), 1);
-        thinPen.DashCap = System.Drawing.Drawing2D.DashCap.Round;
-        thinPen.Color = Color.LightGray;
-        thinPen.DashPattern = new float[]{4.0F, 4.0F, 4.0F, 4.0F};
+        DrawStockText(g);
 
-        Font drawFont = new Font("Arial", 8);
-        SolidBrush blackBrush = new SolidBrush(Color.Black);
-
-        // Axis
-        g.DrawLine(pen, 60, 300, 540, 300); // X-axis
-        int yea = 2016;
-        for (int i = 60 + 48; i < 540; i += 96) { // Horizontal labels
-            g.DrawLine(pen, i, 295, i, 305);
-            g.DrawString(yea.ToString(), drawFont, blackBrush, i - 15, 310);
-            yea += 1;
-            g.DrawLine(thinPen, i, 300, i, 80); // Vertical dashed lines
-        }
-        g.DrawLine(pen, 60, 300, 60, 80); // Y-axis
-        g.DrawLine(thinPen, 540, 300, 540, 80);
-        g.DrawString("June", drawFont, blackBrush, 60 - 15, 310);
-        g.DrawString("June", drawFont, blackBrush, 540 - 15, 310);
-
-        // Stock text
-        g.DrawString(graph.name, new Font("Serif", 12), blackBrush, 400, 20);
-        g.DrawString(graph.ticker, new Font("Serif", 9), blackBrush, 400, 40);
-
-        // Button
         if (can_click_submit) {
-            g.FillRectangle(new SolidBrush(Color.IndianRed), 220, 340, 180, 40);
+            button.BackColor = Color.IndianRed;
         } else {
-            g.FillRectangle(new SolidBrush(Color.LightGray), 220, 345, 170, 40);
+            button.BackColor = Color.LightGray;
         }
-        if (draw_answers)
-            g.DrawString("Try another".ToUpper(), new Font("Serif", 10), new SolidBrush(Color.White), 255, 355);
-        else
-            g.DrawString("Show me how I did".ToUpper(), new Font("Serif", 10), new SolidBrush(Color.White), 240, 355);   
-
-        // Horizontal dashed lines
-        int x = 0;
-        for (int i = 300; i >= 90; i -= (300-90)/(graph.max_price / graph.division)) {
-            if (i != 300) {
-                g.DrawLine(thinPen, 60, i, 540, i);
-            }
-            if (x != 0)
-                g.DrawString((graph.division * x).ToString(), new Font("Serif", 9), blackBrush, 32, i - 8);
-            x += 1;
-        }
-
-        // Draw existing
-        Pen redPen = new Pen(Color.Red, 2);
-        // g.DrawLine(redPen, 60, 300, 60 + 48, 300 - (int)((graph.drawn[2016] / graph.max_price) * 210));
-        int ye = 2015;
-        while (vertexPositions.ContainsKey(ye + 1)) {
-            g.DrawLine(redPen, vertexPositions[ye], vertexPositions[ye + 1]);
-            ye += 1;
-        }
-
-        // Drawing winning as well
-        Pen greenPen = new Pen(Color.Green, 2); 
         if (draw_answers) {
-            for (int i = 2016; i <= 2020; ++i) {
-                Point pt1 = new Point();
-                pt1.X = 108 + (i - 2016)*96;
-                pt1.Y = 300 -  (int)((graph.actual_vertices[i]/graph.max_price)*210);
-                Point pt2 = new Point();
-                pt2.X = 108 + (i + 1 - 2016)*96;
-                if (i + 1 == 2021)
-                    pt2.X -= 48;
-                pt2.Y = 300 - (int)((graph.actual_vertices[i + 1]/graph.max_price)*210);
-                g.DrawLine(greenPen, pt1, pt2);
+            button.Text = "TRY ANOTHER";
+        }
+        else {
+            button.Text = "SHOW ME HOW I DID"; 
+        }
+
+        DrawExisting(g);
+
+        if (draw_answers) {
+            DrawWinning(g);
+        }
+    }
+
+    public void OnButtonClick(Object sender, EventArgs e) {
+        if (can_click_submit && !draw_answers) {
+            draw_answers = true;
+            Invalidate();
+        }
+        if (can_click_submit && draw_answers) {
+            if (display_next) {
+                GetNextReady();
             }
+            display_next = true;
         }
     }
 
     protected override void OnMouseMove(MouseEventArgs e) {
         if (mouse_down & !draw_answers) {
             foreach (int year in vertexPositions.Keys) {
-                if (year == 2016)
+                if (year == StartYear)
                     continue;
                 if (Math.Abs(e.X - vertexPositions[year].X) <= 15 && Math.Abs(e.Y - vertexPositions[year].Y) <= 15) {
                     if (e.Y >= 80 && e.Y <= 300) {
@@ -153,20 +119,6 @@ class Window : Form {
                 }
             }
         }
-
-        if (can_click_submit && !draw_answers)
-            if (e.X >= 220 && e.X <= 220 + 170 && e.Y <= 385 && e.Y >= 345 ) {
-                draw_answers = true;
-                Invalidate();
-            }
-        if (can_click_submit && draw_answers) 
-            if (display_next) {
-                GetNextReady();
-            }
-            if (e.X >= 220 && e.X <= 220 + 170 && e.Y <= 385 && e.Y >= 345 ) {
-                // Next
-                display_next = true;
-            }
     }
 
     public void GetNextReady() {
@@ -176,6 +128,7 @@ class Window : Form {
         mouse_move = false;
         display_next = false;
         vertexPositions = new Dictionary<int, Point>();
+        DrawStartingLine();
         Invalidate();
     }
 
@@ -187,17 +140,103 @@ class Window : Form {
         }
     }
 
+    public void DrawStartingLine() {
+        Point point2 = new Point();
+        point2.X = 60 + 48;
+        point2.Y = 300 - (int)((graph.drawn[StartYear] / graph.max_price) * 210);
+        vertexPositions.Add(StartYear, point2);
+        Point point1 = new Point();
+        point1.X = 60;
+        point1.Y = 300;
+        vertexPositions.Add(2015, point1);
+    }
+
+    public void DrawExisting(Graphics g) {
+        Pen redPen = new Pen(Color.Red, 2);
+        int year = 2015;
+        while (vertexPositions.ContainsKey(year + 1)) {
+            g.DrawLine(redPen, vertexPositions[year], vertexPositions[year + 1]);
+            year += 1;
+        }
+    }
+
+    public void DrawAxes(Graphics g) {
+
+        Pen pen = new Pen(Color.FromArgb(255, 0, 0, 0), 2);
+        Pen thinPen = new Pen(Color.FromArgb(255, 0, 0, 0), 1);
+        thinPen.DashCap = System.Drawing.Drawing2D.DashCap.Round;
+        thinPen.Color = Color.LightGray;
+        thinPen.DashPattern = new float[]{4.0F, 4.0F, 4.0F, 4.0F};
+
+        Font drawFont = new Font("Arial", 8);
+        SolidBrush blackBrush = new SolidBrush(Color.Black);
+
+        g.DrawLine(pen, 60, 300, 540, 300); // X-axis
+        int year = StartYear;
+        for (int i = 60 + 48; i < 540; i += 96) { 
+            g.DrawLine(pen, i, 295, i, 305); // Vertical dashed lines (short)
+            g.DrawString(year.ToString(), drawFont, blackBrush, i - 15, 310); // Horizontal labels
+            year += 1;
+            g.DrawLine(thinPen, i, 300, i, 80); // Vertical dashed lines
+        }
+        g.DrawLine(thinPen, 540, 300, 540, 80); // Vertical dashed lines
+        
+        g.DrawString("June", drawFont, blackBrush, 60 - 15, 310);
+        g.DrawString("June", drawFont, blackBrush, 540 - 15, 310);
+
+        g.DrawLine(pen, 60, 300, 60, 80); // Y-axis
+
+        // Horizontal dashed lines
+        int x = 0;
+        for (int i = 300; i >= 90; i -= (300-90)/(graph.max_price / graph.division)) {
+            if (i != 300) {
+                g.DrawLine(thinPen, 60, i, 540, i);
+            }
+            if (x != 0)
+                g.DrawString((graph.division * x).ToString(), new Font("Arial", 9), blackBrush, 32, i - 8);
+            x += 1;
+        }
+    }
+
+    public void DrawWinning(Graphics g) {
+
+        Pen greenPen = new Pen(Color.Green, 2);
+        g.DrawLine(greenPen, vertexPositions[2015], vertexPositions[StartYear]);
+
+        for (int i = StartYear; i <= EndYear; ++i) {
+            Point pt1 = new Point();
+            pt1.X = 108 + (i - StartYear) * 96;
+            pt1.Y = 300 -  (int)((graph.actual_vertices[i] / graph.max_price) * 210);
+            Point pt2 = new Point();
+            pt2.X = 108 + (i + 1 - StartYear) * 96;
+            if (i + 1 == 2021) {
+                pt2.X -= 48;
+            }
+            pt2.Y = 300 - (int)((graph.actual_vertices[i + 1] / graph.max_price) * 210);
+            g.DrawLine(greenPen, pt1, pt2);
+        }
+    }
+
+    public void DrawStockText(Graphics g) {
+        SolidBrush blackBrush = new SolidBrush(Color.Black);
+        Font nameFont = new Font("Arial", 12);
+        Font tickerFont = new Font("Arial", 9);
+        g.DrawString(graph.name, nameFont, blackBrush, 400, 20);
+        g.DrawString(graph.ticker, tickerFont, blackBrush, 400, 40);
+    }
+
     [STAThread]
     static void Main() {
         Graph graph = new Graph();
         Form form = new Window(graph);
-        form.Height = 450;
         form.Width = 600;
+        form.Height = 450;
         form.BackColor = Color.White;
         form.KeyPreview = true;
         graph.changed += form.Invalidate;
+        
         Application.Run(form);
-    }   
+    }
 }
 
 delegate void Notify();
