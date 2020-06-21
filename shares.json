@@ -105,6 +105,24 @@
             {"year": 2020, "price": 430.38},
             {"year": 2021, "price": 1000.90}
         ]
+    },
+
+    {
+        "id": 7,
+        "name": "IBM Common Stock",
+        "ticker": "NYSE: IBM",
+        "max_price": 180,
+        "division": 20,
+        "year_price": 
+        [
+            {"year": 2015, "price": 165.46},
+            {"year": 2016, "price": 137.62},
+            {"year": 2017, "price": 165.99},
+            {"year": 2018, "price": 153.42},
+            {"year": 2019, "price": 113.03},
+            {"year": 2020, "price": 135.27},
+            {"year": 2021, "price": 122.47}
+        ]
     }
 
 ]

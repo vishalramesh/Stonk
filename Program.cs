@@ -20,6 +20,7 @@ class Window : Form {
     bool mouse_down = false;
     bool mouse_move = false;
     bool display_next = false;
+    bool get_score = false;
 
     const int EndYear = 2020;
     const int StartYear = 2016;
@@ -58,14 +59,6 @@ class Window : Form {
     protected override void OnPaint(PaintEventArgs args) {
         Graphics g = args.Graphics;
 
-        DrawAxes(g);
-
-        DrawStockText(g);
-
-        if (draw_blue) {
-            g.DrawLine(new Pen(Color.Blue, 2), blue1, blue2);
-        }
-
         if (can_click_submit) {
             button.BackColor = Color.IndianRed;
         } else {
@@ -75,7 +68,26 @@ class Window : Form {
             button.Text = "TRY ANOTHER";
         }
         else {
-            button.Text = "SHOW ME HOW I DID"; 
+            button.Text = "SHOW ME HOW I DID";
+        }
+
+        if (graph.current_id == graph.max_id && draw_answers) {
+            
+            button.Text = "GET SCORE";
+            if (display_next) {
+                button.Text = "PLAY AGAIN";
+                g.DrawString("You were off by:", new Font("Arial", 20), new SolidBrush(Color.Black), 200, 166);
+                g.DrawString("$" + graph.score.ToString(), new Font("Arial", 28), new SolidBrush(Color.Black), 272, 194);
+                return;
+            }
+        }
+
+        DrawAxes(g);
+
+        DrawStockText(g);
+
+        if (draw_blue) {
+            g.DrawLine(new Pen(Color.Blue, 2), blue1, blue2);
         }
 
         DrawExisting(g);
@@ -87,8 +99,18 @@ class Window : Form {
 
     public void OnButtonClick(Object sender, EventArgs e) {
         if (can_click_submit && draw_answers) {
-            if (display_next) {
+            if (get_score && !display_next) {
+
+            }
+            if (display_next || graph.current_id != graph.max_id) {
+                Invalidate();
                 GetNextReady();
+            }
+            if (!get_score) { 
+                get_score = true;
+                Invalidate();
+                display_next = true;
+                return;
             }
             display_next = true;
         }
@@ -180,9 +202,19 @@ class Window : Form {
         mouse_move = false;
         display_next = false;
         draw_blue = false;
+        get_score = false;
+
+        graph.update_score();
+
         vertexPositions.Clear();
         graph.actual_vertices.Clear();
         graph.drawn.Clear();
+
+        if (graph.current_id == graph.max_id) {
+            graph.current_id = 0;
+            graph.score = 0;
+        }
+
         graph.next();
         DrawStartingLine();
         Invalidate();
@@ -334,12 +366,13 @@ class Graph {
 
     public string ticker { get; set; }
 
-    public string name;
-    public string Name { get; set; }
+    public string name { get; set; }
 
     public int max_price { get; set; }
 
     public int division { get; set; }
+
+    public int score { get; set; }
 
 
     public Dictionary<int, double> drawn {
@@ -352,8 +385,9 @@ class Graph {
     
     Dictionary<int, double> drawn_vertices = new Dictionary<int, double>();
 
-    int current_id = 0;
-    int max_id = 6;
+    public int current_id { get; set; }
+
+    public int max_id { get; set; }
 
     Share_Root share_data;
 
@@ -361,6 +395,10 @@ class Graph {
 
         string jsonString = File.ReadAllText("shares.json");
         share_data = JsonSerializer.Deserialize<Share_Root>(jsonString);
+
+        current_id = 0;
+        max_id = share_data.shares.ToArray().Length;
+        score = 0;
 
         next();
     }
@@ -375,7 +413,14 @@ class Graph {
         changed?.Invoke();
     }
 
+    public void update_score() {
+        foreach (int year in drawn_vertices.Keys) {
+            score += (int)(Math.Abs(drawn_vertices[year] - actual_vertices[year]));
+        }
+    }
+
     public void next() {
+
         current_id += 1;
         foreach (var s in share_data.shares.ToArray()) {
             if (s.id == current_id) {
@@ -388,8 +433,7 @@ class Graph {
                 }
                 break;
             }
-        }        
-
+        }
     }
 
 }
