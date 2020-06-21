@@ -21,6 +21,10 @@ class Window : Form {
     const int EndYear = 2020;
     const int StartYear = 2016;
 
+    Point blue1;
+    Point blue2;
+    bool draw_blue = false;
+
     Dictionary<int, Point> vertexPositions = new Dictionary<int, Point>();
 
     public Window(Graph graph) {
@@ -38,6 +42,9 @@ class Window : Form {
     }
 
     public int x_to_year(int x) {
+        if (x < 108) {
+            return 2016;
+        }
         return 2017 + (x - 108) / 96;
     }
 
@@ -51,6 +58,10 @@ class Window : Form {
         DrawAxes(g);
 
         DrawStockText(g);
+
+        if (draw_blue) {
+            g.DrawLine(new Pen(Color.Blue, 2), blue1, blue2);
+        }
 
         if (can_click_submit) {
             button.BackColor = Color.IndianRed;
@@ -86,17 +97,46 @@ class Window : Form {
 
     protected override void OnMouseMove(MouseEventArgs e) {
         if (mouse_down & !draw_answers) {
+
             foreach (int year in vertexPositions.Keys) {
+
                 if (year == StartYear)
                     continue;
-                if (Math.Abs(e.X - vertexPositions[year].X) <= 15 && Math.Abs(e.Y - vertexPositions[year].Y) <= 15) {
-                    if (e.Y >= 80 && e.Y <= 300) {
+                if (Math.Abs(e.X - vertexPositions[year].X) <= 15 && Math.Abs(e.Y - vertexPositions[year].Y) <= 15 
+                    && e.Y >= 80 && e.Y <= 300) {
                         vertexPositions[year] = new Point(vertexPositions[year].X, e.Y);
+                        graph.changePrice(year, y_to_price(e.Y));
                         mouse_move = true;
                         break;
                     }
-                }
             }
+        }
+
+        if (!mouse_down && !draw_answers) {
+
+            if (e.Y <= 300 && e.Y >= 90 && vertexPositions.ContainsKey(x_to_year(e.X) - 1) 
+                && vertexPositions.ContainsKey(x_to_year(e.X)) == false) {
+            
+                for (int i = 0; i <= 4; ++i) {
+                    if (108 + 96 * i < e.X && 108 + 96 * (i + 1) >= e.X) {
+                        Point p = new Point();
+                        p.X = 108 + 96 * (i + 1);
+                        p.X = (i == 4) ? p.X - 48: p.X;
+                        p.Y = e.Y;
+                        // DrawLine
+                        draw_blue = true;
+                        blue1 = p;
+                        Point p2 = new Point();
+                        p2.X = 108 + 96 * i;
+                        p2.Y = vertexPositions[x_to_year(p2.X - 20)].Y;
+                        blue2 = p2;
+                        Invalidate();
+                    }
+                }
+            } else {
+                draw_blue = false;
+            }
+
         }
     }
 
@@ -147,7 +187,7 @@ class Window : Form {
         vertexPositions.Add(StartYear, point2);
         Point point1 = new Point();
         point1.X = 60;
-        point1.Y = 300;
+        point1.Y = 300 - (int)((graph.drawn[2015] / graph.max_price) * 210);
         vertexPositions.Add(2015, point1);
     }
 
@@ -244,31 +284,75 @@ delegate void Notify();
 class Graph {
     public Notify changed;
 
-    class Stock {
-        string ticker;
-        string name;
-        int max_price;
-        int division;
+    public class Stock {
+
+        string stock_ticker = "NASDAQ: AAPL";
+        string stock_name = "Apple Inc.";
+        int stock_max_price = 400;
+        int stock_division = 100;
+
         Dictionary<int, double> actual_vertices = new Dictionary<int, double>();
+
+        public string ticker {
+            get {
+                return this.stock_ticker;
+            }
+            set {
+                this.stock_ticker = value;
+            }
+        }
+
+        public string name {
+            get {
+                return this.stock_name;
+            }
+            set {
+                this.stock_name = value;
+            }
+        }
+
+        public int max_price {
+            get {
+                return this.stock_max_price;
+            }
+            set {
+                this.max_price = value;
+            }
+        }
+
+        public int division {
+            get {
+                return this.stock_division;
+            }
+            set {
+                this.stock_division = value;
+            }
+        }
     }
 
-    Dictionary<string, string> stock = new Dictionary<string, string>();
+    Stock stock = new Stock();
 
     public string ticker {
         get {
-            return stock["ticker"];
+            return stock.ticker;
+        }
+        set {
+            stock.ticker = value;
         }
     }
 
     public string name {
         get {
-            return stock["name"];
+            return stock.name;
+        }
+        set {
+            stock.ticker = value;
         }
     }
 
     public int max_price {
         get {
-            return 400;
+            return stock.max_price;
         }
         set {
             max_price = value;
@@ -277,7 +361,7 @@ class Graph {
 
     public int division {
         get {
-            return 100;
+            return stock.division;
         }
         set {
             division = value;
@@ -292,6 +376,7 @@ class Graph {
 
     public Dictionary<int, double> actual_vertices = new Dictionary<int, double>();
     Dictionary<int, double> drawn_vertices = new Dictionary<int, double>();
+
     public Graph() {
         actual_vertices.Add(2015, 127.17);
         actual_vertices.Add(2016, 96.96);
@@ -304,8 +389,8 @@ class Graph {
         drawn_vertices.Add(2015, 127.17);
         drawn_vertices.Add(2016, 96.96);
 
-        stock.Add("ticker", "NASDAQ: AAPL");
-        stock.Add("name", "Apple Inc.");
+        // stock.Add("ticker", "NASDAQ: AAPL");
+        // stock.Add("name", "Apple Inc.");
 
         // Stock stock = new Stock();
     }
