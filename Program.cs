@@ -86,15 +86,15 @@ class Window : Form {
     }
 
     public void OnButtonClick(Object sender, EventArgs e) {
-        if (can_click_submit && !draw_answers) {
-            draw_answers = true;
-            Invalidate();
-        }
         if (can_click_submit && draw_answers) {
             if (display_next) {
                 GetNextReady();
             }
             display_next = true;
+        }
+        if (can_click_submit && !draw_answers) {
+            draw_answers = true;
+            Invalidate();
         }
     }
 
