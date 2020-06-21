@@ -332,56 +332,6 @@ delegate void Notify();
 class Graph {
     public Notify changed;
 
-    
-
-    public class Stock {
-
-        string stock_ticker = "NASDAQ: AAPL";
-        string stock_name = "Apple Inc.";
-        int stock_max_price = 400;
-        int stock_division = 100;
-
-        Dictionary<int, double> actual_vertices = new Dictionary<int, double>();
-
-        public string ticker {
-            get {
-                return this.stock_ticker;
-            }
-            set {
-                this.stock_ticker = value;
-            }
-        }
-
-        public string name {
-            get {
-                return this.stock_name;
-            }
-            set {
-                this.stock_name = value;
-            }
-        }
-
-        public int max_price {
-            get {
-                return this.stock_max_price;
-            }
-            set {
-                this.max_price = value;
-            }
-        }
-
-        public int division {
-            get {
-                return this.stock_division;
-            }
-            set {
-                this.stock_division = value;
-            }
-        }
-    }
-
-    Stock stock = new Stock();
-
     public string ticker { get; set; }
 
     public string name;
@@ -438,11 +388,6 @@ class Graph {
                 }
                 break;
             }
-            // foreach (var t in share_data.shares.ToArray()) {
-            //     foreach (var u in t.year_price) {
-            //         Console.WriteLine(u.price);
-            //     }
-            // }
         }        
 
     }
