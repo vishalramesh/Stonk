@@ -6,6 +6,9 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
 
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 class Window : Form {
 
     Graph graph;
@@ -136,7 +139,16 @@ class Window : Form {
             } else {
                 draw_blue = false;
             }
+        }
 
+        if (!mouse_down && !draw_answers) {
+            foreach (int year in vertexPositions.Keys) {
+                if (Math.Abs(e.Y - vertexPositions[year].Y) <= 10 && x_to_year(e.X - 10) == year && x_to_year(e.X + 10) != year) {
+                    // Console.WriteLine("sjjs");
+
+                    break;
+                }
+            }
         }
     }
 
@@ -167,8 +179,11 @@ class Window : Form {
         mouse_down = false;
         mouse_move = false;
         display_next = false;
-        vertexPositions = new Dictionary<int, Point>();
-        DrawStartingLine();
+        draw_blue = false;
+        vertexPositions.Clear();
+        graph.drawn.Clear();
+        graph.next();
+        // DrawStartingLine();
         Invalidate();
     }
 
@@ -182,13 +197,17 @@ class Window : Form {
 
     public void DrawStartingLine() {
         Point point2 = new Point();
+        graph.addPoint(StartYear, graph.actual_vertices[StartYear]);
         point2.X = 60 + 48;
         point2.Y = 300 - (int)((graph.drawn[StartYear] / graph.max_price) * 210);
         vertexPositions.Add(StartYear, point2);
+        
         Point point1 = new Point();
+        graph.addPoint(2015, graph.actual_vertices[2015]);
         point1.X = 60;
         point1.Y = 300 - (int)((graph.drawn[2015] / graph.max_price) * 210);
         vertexPositions.Add(2015, point1);
+        
     }
 
     public void DrawExisting(Graphics g) {
@@ -279,10 +298,40 @@ class Window : Form {
     }
 }
 
+public class Year {
+
+    public int year { get; set; }
+    public double price { get; set; }
+
+}
+
+public class Share {
+
+    public int id { get; set; }
+
+    public string name { get; set; }
+
+    public string ticker { get; set; }
+
+    public int max_price { get; set; }
+
+    public int division { get; set; }
+        
+    public List<Year> year_price { get; set; }
+        
+}
+
+public class Share_Root {
+
+    public List<Share> shares { get; set; }
+}
+
 delegate void Notify();
 
 class Graph {
     public Notify changed;
+
+    
 
     public class Stock {
 
@@ -332,41 +381,49 @@ class Graph {
 
     Stock stock = new Stock();
 
-    public string ticker {
-        get {
-            return stock.ticker;
-        }
-        set {
-            stock.ticker = value;
-        }
-    }
+    // public string ticker;
 
-    public string name {
+    // public string Ticker {
+    //     get {
+    //         return stock.ticker;
+    //     }
+    //     set {
+    //         this.ticker = value;
+    //     }
+    // }
+
+    public string ticker { get; set; }
+
+    public string name;
+    public string Name {
         get {
             return stock.name;
         }
         set {
-            stock.ticker = value;
+            this.name = value;
         }
     }
 
-    public int max_price {
+    public int max_price;
+    public int Max_price {
         get {
             return stock.max_price;
         }
         set {
-            max_price = value;
+            this.max_price = value;
         }
     }
 
-    public int division {
+    public int division;
+    public int Division {
         get {
             return stock.division;
         }
         set {
-            division = value;
+            this.division = value;
         }
     }
+
 
     public Dictionary<int, double> drawn {
         get {
@@ -375,24 +432,27 @@ class Graph {
     }
 
     public Dictionary<int, double> actual_vertices = new Dictionary<int, double>();
+    
     Dictionary<int, double> drawn_vertices = new Dictionary<int, double>();
 
+    int current_id = 0;
+    int max_id = 6;
+
+    Share_Root share_data;
+
     public Graph() {
-        actual_vertices.Add(2015, 127.17);
-        actual_vertices.Add(2016, 96.96);
-        actual_vertices.Add(2017, 115.82);
-        actual_vertices.Add(2018, 169.23);
-        actual_vertices.Add(2019, 156.23);
-        actual_vertices.Add(2020, 289.80);
-        actual_vertices.Add(2021, 331.50);
+        // actual_vertices.Add(2015, 127.17);
+        // actual_vertices.Add(2016, 96.96);
+        // actual_vertices.Add(2017, 115.82);
+        // actual_vertices.Add(2018, 169.23);
+        // actual_vertices.Add(2019, 156.23);
+        // actual_vertices.Add(2020, 289.80);
+        // actual_vertices.Add(2021, 331.50);
 
-        drawn_vertices.Add(2015, 127.17);
-        drawn_vertices.Add(2016, 96.96);
+        string jsonString = File.ReadAllText("shares.json");
+        share_data = JsonSerializer.Deserialize<Share_Root>(jsonString);
 
-        // stock.Add("ticker", "NASDAQ: AAPL");
-        // stock.Add("name", "Apple Inc.");
-
-        // Stock stock = new Stock();
+        next();
     }
 
     public void addPoint(int year, double price) {
@@ -403,6 +463,28 @@ class Graph {
     public void changePrice(int year, double price) {
         drawn_vertices[year] = price;
         changed?.Invoke();
+    }
+
+    public void next() {
+        current_id += 1;
+        foreach (var s in share_data.shares.ToArray()) {
+            if (s.id == current_id) {
+                division = s.division;
+                max_price = s.max_price;
+                ticker = s.ticker;
+                name = s.name;
+                foreach (var t in s.year_price.ToArray()) {
+                    actual_vertices.Add(t.year, t.price);
+                }
+                break;
+            }
+            // foreach (var t in share_data.shares.ToArray()) {
+            //     foreach (var u in t.year_price) {
+            //         Console.WriteLine(u.price);
+            //     }
+            // }
+        }        
+
     }
 
 }

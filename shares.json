@@ -1,0 +1,111 @@
+{"shares": [
+    {
+        "id": 1,
+        "name": "Apple Inc.",
+        "ticker": "NASDAQ: AAPL",
+        "max_price": 400,
+        "division": 100,
+        "year_price": 
+        [
+            {"year": 2015, "price": 127.17},
+            {"year": 2016, "price": 96.96},
+            {"year": 2017, "price": 115.82},
+            {"year": 2018, "price": 169.23},
+            {"year": 2019, "price": 156.23},
+            {"year": 2020, "price": 289.80},
+            {"year": 2021, "price": 331.50}    
+        ]
+    },
+
+    {
+        "id": 2,
+        "name": "Domino's Pizza Inc.",
+        "ticker": "NYSE: DPZ",
+        "max_price": 400,
+        "division": 100,
+        "year_price": 
+        [
+            {"year": 2015, "price": 114.90},
+            {"year": 2016, "price": 111.25},
+            {"year": 2017, "price": 159.24},
+            {"year": 2018, "price": 188.96},
+            {"year": 2019, "price": 249.95},
+            {"year": 2020, "price": 292.32},
+            {"year": 2021, "price": 378.41}
+        ]
+    },
+
+    {
+        "id": 3,
+        "name": "Advanced Micro Devices, Inc.",
+        "ticker": "NASDAQ: AMD",
+        "max_price": 100,
+        "division": 20,
+        "year_price": 
+        [
+            {"year": 2015, "price": 2.47},
+            {"year": 2016, "price": 2.87},
+            {"year": 2017, "price": 11.34},
+            {"year": 2018, "price": 10.28},
+            {"year": 2019, "price": 17.82},
+            {"year": 2020, "price": 46.18},
+            {"year": 2021, "price": 54.23}
+        ]
+    },
+
+    {
+        "id": 4,
+        "name": "Macy's Inc",
+        "ticker": "NYSE: M",
+        "max_price": 100,
+        "division": 20,
+        "year_price": 
+        [
+            {"year": 2015, "price": 69.85},
+            {"year": 2016, "price": 34.98},
+            {"year": 2017, "price": 35.81},
+            {"year": 2018, "price": 25.19},
+            {"year": 2019, "price": 30.02},
+            {"year": 2020, "price": 16.51},
+            {"year": 2021, "price": 6.88}
+        ]
+    },
+
+    {
+        "id": 5,
+        "name": "Exxon Mobil Corporation",
+        "ticker": "NYSE: XOM",
+        "max_price": 100,
+        "division": 20,
+        "year_price": 
+        [
+            {"year": 2015, "price": 83.86},
+            {"year": 2016, "price": 77.95},
+            {"year": 2017, "price": 90.26},
+            {"year": 2018, "price": 83.64},
+            {"year": 2019, "price": 68.17},
+            {"year": 2020, "price": 69.89},
+            {"year": 2021, "price": 45.98}
+        ]
+    },
+
+    {
+        "id": 6,
+        "name": "Tesla Inc",
+        "ticker": "NASDAQ: TSLA",
+        "max_price": 1000,
+        "division": 200,
+        "year_price": 
+        [
+            {"year": 2015, "price": 267.09},
+            {"year": 2016, "price": 240.01},
+            {"year": 2017, "price": 213.69},
+            {"year": 2018, "price": 311.35},
+            {"year": 2019, "price": 333.87},
+            {"year": 2020, "price": 430.38},
+            {"year": 2021, "price": 1000.90}
+        ]
+    }
+
+]
+}
