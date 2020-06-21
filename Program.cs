@@ -181,9 +181,10 @@ class Window : Form {
         display_next = false;
         draw_blue = false;
         vertexPositions.Clear();
+        graph.actual_vertices.Clear();
         graph.drawn.Clear();
         graph.next();
-        // DrawStartingLine();
+        DrawStartingLine();
         Invalidate();
     }
 
@@ -381,48 +382,14 @@ class Graph {
 
     Stock stock = new Stock();
 
-    // public string ticker;
-
-    // public string Ticker {
-    //     get {
-    //         return stock.ticker;
-    //     }
-    //     set {
-    //         this.ticker = value;
-    //     }
-    // }
-
     public string ticker { get; set; }
 
     public string name;
-    public string Name {
-        get {
-            return stock.name;
-        }
-        set {
-            this.name = value;
-        }
-    }
+    public string Name { get; set; }
 
-    public int max_price;
-    public int Max_price {
-        get {
-            return stock.max_price;
-        }
-        set {
-            this.max_price = value;
-        }
-    }
+    public int max_price { get; set; }
 
-    public int division;
-    public int Division {
-        get {
-            return stock.division;
-        }
-        set {
-            this.division = value;
-        }
-    }
+    public int division { get; set; }
 
 
     public Dictionary<int, double> drawn {
@@ -441,13 +408,6 @@ class Graph {
     Share_Root share_data;
 
     public Graph() {
-        // actual_vertices.Add(2015, 127.17);
-        // actual_vertices.Add(2016, 96.96);
-        // actual_vertices.Add(2017, 115.82);
-        // actual_vertices.Add(2018, 169.23);
-        // actual_vertices.Add(2019, 156.23);
-        // actual_vertices.Add(2020, 289.80);
-        // actual_vertices.Add(2021, 331.50);
 
         string jsonString = File.ReadAllText("shares.json");
         share_data = JsonSerializer.Deserialize<Share_Root>(jsonString);
