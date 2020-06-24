@@ -43,6 +43,7 @@ class Window : Form {
         button.Font = new Font("Arial", 10);
         this.Controls.Add(button);
         button.Click += OnButtonClick;
+        DoubleBuffered = true;
     }
 
     public int x_to_year(int x) {
