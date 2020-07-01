@@ -60,6 +60,8 @@ class Window : Form {
     protected override void OnPaint(PaintEventArgs args) {
         Graphics g = args.Graphics;
 
+        g.DrawString("Total score (off by): $" + graph.score.ToString(), new Font("Arial", 12), new SolidBrush(Color.Black), 30, 20);
+
         button.BackColor = can_click_submit ? Color.IndianRed : Color.LightGray;
         button.Text = draw_answers ? "TRY ANOTHER" : "SHOW ME HOW I DID";
 
@@ -108,6 +110,7 @@ class Window : Form {
         }
         if (can_click_submit && !draw_answers) {
             draw_answers = true;
+            graph.update_score();
             Invalidate();
         }
     }
@@ -179,8 +182,6 @@ class Window : Form {
                     p.Y = e.Y;
                     vertexPositions.Add(x_to_year(e.X), p);
                     graph.addPoint(x_to_year(e.X), y_to_price(e.Y));
-                    Console.WriteLine(y_to_price(e.Y));
-                    Console.WriteLine(graph.actual_vertices[x_to_year(e.X)]);
                     Invalidate();
                 }
             }
@@ -195,8 +196,6 @@ class Window : Form {
         display_next = false;
         draw_blue = false;
         get_score = false;
-
-        graph.update_score();
 
         vertexPositions.Clear();
         graph.actual_vertices.Clear();
