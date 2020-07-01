@@ -54,32 +54,23 @@ class Window : Form {
     }
 
     public double y_to_price(int y) {
-        return graph.max_price * ((300 - y) / 210);
+        return graph.max_price * ((double)(300 - y) / 210.0);
     }
 
     protected override void OnPaint(PaintEventArgs args) {
         Graphics g = args.Graphics;
 
-        if (can_click_submit) {
-            button.BackColor = Color.IndianRed;
-        } else {
-            button.BackColor = Color.LightGray;
-        }
-        if (draw_answers) {
-            button.Text = "TRY ANOTHER";
-        }
-        else {
-            button.Text = "SHOW ME HOW I DID";
-        }
+        button.BackColor = can_click_submit ? Color.IndianRed : Color.LightGray;
+        button.Text = draw_answers ? "TRY ANOTHER" : "SHOW ME HOW I DID";
 
         if (graph.current_id == graph.max_id && draw_answers) {
             
             button.Text = "GET SCORE";
             if (display_next) {
                 button.Text = "PLAY AGAIN";
-                g.DrawString("You were off by:", new Font("Arial", 20), new SolidBrush(Color.Black), 200, 166);
-                g.DrawString("$" + graph.score.ToString(), new Font("Arial", 28), new SolidBrush(Color.Black), 272, 194);
-                return;
+                // g.DrawString("You were off by:", new Font("Arial", 20), new SolidBrush(Color.Black), 200, 166);
+                // g.DrawString("$" + graph.score.ToString(), new Font("Arial", 28), new SolidBrush(Color.Black), 272, 194);
+                // return;
             }
         }
 
@@ -167,8 +158,6 @@ class Window : Form {
         if (!mouse_down && !draw_answers) {
             foreach (int year in vertexPositions.Keys) {
                 if (Math.Abs(e.Y - vertexPositions[year].Y) <= 10 && x_to_year(e.X - 10) == year && x_to_year(e.X + 10) != year) {
-                    // Console.WriteLine("sjjs");
-
                     break;
                 }
             }
@@ -190,6 +179,8 @@ class Window : Form {
                     p.Y = e.Y;
                     vertexPositions.Add(x_to_year(e.X), p);
                     graph.addPoint(x_to_year(e.X), y_to_price(e.Y));
+                    Console.WriteLine(y_to_price(e.Y));
+                    Console.WriteLine(graph.actual_vertices[x_to_year(e.X)]);
                     Invalidate();
                 }
             }
@@ -210,6 +201,7 @@ class Window : Form {
         vertexPositions.Clear();
         graph.actual_vertices.Clear();
         graph.drawn.Clear();
+        graph.drawn_vertices.Clear();
 
         if (graph.current_id == graph.max_id) {
             graph.current_id = 0;
@@ -384,7 +376,7 @@ class Graph {
 
     public Dictionary<int, double> actual_vertices = new Dictionary<int, double>();
     
-    Dictionary<int, double> drawn_vertices = new Dictionary<int, double>();
+    public Dictionary<int, double> drawn_vertices = new Dictionary<int, double>();
 
     public int current_id { get; set; }
 
