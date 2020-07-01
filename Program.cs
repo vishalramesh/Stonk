@@ -29,6 +29,8 @@ class Window : Form {
     Point blue2;
     bool draw_blue = false;
 
+    int prev_score = 0;
+
     Dictionary<int, Point> vertexPositions = new Dictionary<int, Point>();
 
     public Window(Graph graph) {
@@ -61,7 +63,10 @@ class Window : Form {
         Graphics g = args.Graphics;
 
         g.DrawString("Total score (off by): $" + graph.score.ToString(), new Font("Arial", 12), new SolidBrush(Color.Black), 30, 20);
-
+        if (draw_answers) {
+            g.DrawString("+$" + (graph.score - prev_score).ToString(), new Font("Arial", 12), new SolidBrush(Color.Red), 160, 40);
+        }
+        
         button.BackColor = can_click_submit ? Color.IndianRed : Color.LightGray;
         button.Text = draw_answers ? "TRY ANOTHER" : "SHOW ME HOW I DID";
 
@@ -70,9 +75,6 @@ class Window : Form {
             button.Text = "GET SCORE";
             if (display_next) {
                 button.Text = "PLAY AGAIN";
-                // g.DrawString("You were off by:", new Font("Arial", 20), new SolidBrush(Color.Black), 200, 166);
-                // g.DrawString("$" + graph.score.ToString(), new Font("Arial", 28), new SolidBrush(Color.Black), 272, 194);
-                // return;
             }
         }
 
@@ -110,6 +112,7 @@ class Window : Form {
         }
         if (can_click_submit && !draw_answers) {
             draw_answers = true;
+            prev_score = graph.score;
             graph.update_score();
             Invalidate();
         }
@@ -205,6 +208,7 @@ class Window : Form {
         if (graph.current_id == graph.max_id) {
             graph.current_id = 0;
             graph.score = 0;
+            prev_score = 0;
         }
 
         graph.next();
